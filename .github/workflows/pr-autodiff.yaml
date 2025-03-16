@@ -1,0 +1,72 @@
+name: PR Diff Summarization
+on:
+  pull_request:
+    branches: [main]
+    types: [opened, ready_for_review, reopened]
+permissions:
+  contents: read
+  pull-requests: write
+jobs:
+  pr-diff-summarization:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - name: Generate Bilingual Diff
+        run: |
+          DIFF_CONTENT=$(git diff origin/main...HEAD | grep '^[+-]' | grep -Ev '^(---|\+\+\+)')
+          echo "Code Changes:" > diff_report.md
+          echo "---" >> diff_report.md
+          echo "diff" >> diff_report.md
+          echo "$DIFF_CONTENT" | head -n 780 >> diff_report.md  # Only show the first 780 lines of diff, to prevent exceeding the maximum context size
+          echo "" >> diff_report.md
+          echo "NOTE: Only key changes shown" >> diff_report.md
+      - name: Display Diff Report
+        run: cat diff_report.md
+      - name: Generate Example Diff
+        run: |
+          echo "## Diff Report" > diff_example.md
+          echo "---" >> diff_example.md
+          echo "**English:**" >> diff_example.md
+          echo "- Added a class called `ABC` to the `xyz` module." >> diff_example.md
+          echo "- Modified the `foo` function to handle edge cases." >> diff_example.md
+          echo "**Chinese (Simplified):**" >> diff_example.md
+          echo "- 新增了一个名为`ABC`的类到`xyz`模块中。" >> diff_example.md
+          echo "- 修改了`foo`函数以处理边缘情况。" >> diff_example.md
+      - name: Generate Guidelines file
+        run: |
+          echo "## Report Generation Guidelines" > guidelines.md
+          echo "---" >> guidelines.md
+          echo "1. Provide the English version first, followed by the Chinese Simplified version." >> guidelines.md
+          echo "2. Use the template shown below for the code changes." >> guidelines.md
+          echo "3. Only key changes are written to the report." >> guidelines.md
+          echo "4. Our repo prefers pure-English language in the code per se, so please explicitly point it out if the contributed code uses non-English comments." >> guidelines.md
+          echo "5. If there are explicit mistakes (including explicit mistake spelling or offensive language), please point them out." >> guidelines.md
+      - name: Analyze with OpenAI
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          OPENAI_BASE_URL: ${{ secrets.OPENAI_BASE_URL }}
+        run: |
+          PROMPT="Review code changes and provide concise bilingual feedback (Provide English version first, followed by the Chinese Simplified version). Follow the guidelines below: \n\n\n$(cat guidelines.md)\n\n\n\nOutput in a similar format as in the template shown: \n\n\n$(cat diff_example.md)\n\n\n\n Real diff: $(cat diff_report.md)"
+          jq -n --arg prompt "$PROMPT" '{
+            "model": "o3-mini",
+            "messages": [
+              { "role": "system", "content": "Provide bilingual Chinese/English code diff feedback according to user's guidelines." },
+              { "role": "user", "content": $prompt }
+            ]
+          }' > request.json
+          curl -sS ${OPENAI_BASE_URL}/chat/completions \
+            -H "Content-Type: application/json" \
+            -H "Authorization: Bearer ${OPENAI_API_KEY}" \
+            -d @request.json > response.json
+      - name: Display AI Response
+        run: cat response.json
+      - name: Post the difference from AI
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          COMMENT=$(jq -r '.choices[0].message.content' response.json)
+          gh api repos/${{ github.repository }}/issues/${{ github.event.pull_request.number }}/comments \
+            -f body="$COMMENT"
