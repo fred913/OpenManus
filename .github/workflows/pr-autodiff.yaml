@@ -30,11 +30,11 @@ jobs:
           echo "## Diff Report" > diff_example.md
           echo "---" >> diff_example.md
           echo "**English:**" >> diff_example.md
-          echo "- Added a class called `ABC` to the `xyz` module." >> diff_example.md
-          echo "- Modified the `foo` function to handle edge cases." >> diff_example.md
+          echo "- Added a class called \`ABC\` to the \`xyz\` module." >> diff_example.md
+          echo "- Modified the \`foo\` function to handle edge cases." >> diff_example.md
           echo "**Chinese (Simplified):**" >> diff_example.md
-          echo "- 新增了一个名为`ABC`的类到`xyz`模块中。" >> diff_example.md
-          echo "- 修改了`foo`函数以处理边缘情况。" >> diff_example.md
+          echo "- 新增了一个名为\`ABC\`的类到\`xyz\`模块中。" >> diff_example.md
+          echo "- 修改了\`foo\`函数以处理边缘情况。" >> diff_example.md
       - name: Generate Guidelines file
         run: |
           echo "## Report Generation Guidelines" > guidelines.md
@@ -49,7 +49,8 @@ jobs:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           OPENAI_BASE_URL: ${{ secrets.OPENAI_BASE_URL }}
         run: |
-          PROMPT="Review code changes and provide concise bilingual feedback (Provide English version first, followed by the Chinese Simplified version). Follow the guidelines below: \n\n\n$(cat guidelines.md)\n\n\n\nOutput in a similar format as in the template shown: \n\n\n$(cat diff_example.md)\n\n\n\n Real diff: $(cat diff_report.md)"
+          PROMPT="Review code changes and provide concise bilingual feedback (Provide English version first, followed by the Chinese Simplified version). Follow the guidelines below: \n\n\n$(cat guidelines.md)\n\n\n\nOutput in a similar format as in the template shown: \n\n\n$(cat diff_example.md)\n\n\n\nReal diff: $(cat diff_report.md)"
+          echo "Prompt: $PROMPT"
           jq -n --arg prompt "$PROMPT" '{
             "model": "o3-mini",
             "messages": [
