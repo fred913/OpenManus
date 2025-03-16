@@ -6,7 +6,7 @@ permissions:
   contents: read
   pull-requests: write
 jobs:
-  quality-security-analysis:
+  pr-diff-summarization:
     runs-on: ubuntu-latest
     steps:
       - name: Check out code
@@ -24,12 +24,22 @@ jobs:
           echo "NOTE: Only key changes shown" >> diff_report.md
       - name: Display Diff Report
         run: cat diff_report.md
+      - name: Generate Example Diff
+        run: |
+          echo "## Diff Report" > diff_example.md
+          echo "---" >> diff_example.md
+          echo "**English:**" >> diff_example.md
+          echo "- Added a class called `ABC` to the `xyz` module." >> diff_example.md
+          echo "- Modified the `foo` function to handle edge cases." >> diff_example.md
+          echo "**Chinese (Simplified):**" >> diff_example.md
+          echo "- 新增了一个名为`ABC`的类到`xyz`模块中。" >> diff_example.md
+          echo "- 修改了`foo`函数以处理边缘情况。" >> diff_example.md
       - name: Analyze with OpenAI
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           OPENAI_BASE_URL: ${{ secrets.OPENAI_BASE_URL }}
         run: |
-          PROMPT="Review code changes and provide concise bilingual feedback (Provide English version first, followed by the Chinese Simplified version). $(cat diff_report.md)"
+          PROMPT="Review code changes and provide concise bilingual feedback (Provide English version first, followed by the Chinese Simplified version). Output in a similar format as in the template shown: \n\n```markdown\n$(cat diff_example.md)\n```\n\n\n Real diff: $(cat diff_report.md)"
           jq -n --arg prompt "$PROMPT" '{
             "model": "o3-mini",
             "messages": [
