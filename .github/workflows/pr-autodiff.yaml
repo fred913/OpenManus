@@ -2,7 +2,7 @@ name: PR Diff Summarization
 on:
   pull_request:
     branches: [main]
-    types: [opened, ready_for_review]
+    types: [opened, ready_for_review, reopened]
 permissions:
   contents: read
   pull-requests: write
@@ -19,9 +19,9 @@ jobs:
           DIFF_CONTENT=$(git diff origin/main...HEAD | grep '^[+-]' | grep -Ev '^(---|\+\+\+)')
           echo "Code Changes:" > diff_report.md
           echo "---" >> diff_report.md
-          echo "\`\`\`diff" >> diff_report.md
+          echo "diff" >> diff_report.md
           echo "$DIFF_CONTENT" | head -n 780 >> diff_report.md  # Only show the first 780 lines of diff, to prevent exceeding the maximum context size
-          echo "\`\`\`" >> diff_report.md
+          echo "" >> diff_report.md
           echo "NOTE: Only key changes shown" >> diff_report.md
       - name: Display Diff Report
         run: cat diff_report.md
@@ -49,7 +49,7 @@ jobs:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           OPENAI_BASE_URL: ${{ secrets.OPENAI_BASE_URL }}
         run: |
-          PROMPT="Review code changes and provide concise bilingual feedback (Provide English version first, followed by the Chinese Simplified version). Follow the guidelines below: \n\n\`\`\`markdown\n$(cat guidelines.md)\n\`\`\`\n\n\nOutput in a similar format as in the template shown: \n\n\`\`\`markdown\n$(cat diff_example.md)\n\`\`\`\n\n\n Real diff: $(cat diff_report.md)"
+          PROMPT="Review code changes and provide concise bilingual feedback (Provide English version first, followed by the Chinese Simplified version). Follow the guidelines below: \n\n\n$(cat guidelines.md)\n\n\n\nOutput in a similar format as in the template shown: \n\n\n$(cat diff_example.md)\n\n\n\n Real diff: $(cat diff_report.md)"
           jq -n --arg prompt "$PROMPT" '{
             "model": "o3-mini",
             "messages": [
