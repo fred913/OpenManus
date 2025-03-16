@@ -18,14 +18,17 @@ jobs:
        (github.event.comment.author_association == 'COLLABORATOR' || github.event.comment.author_association == 'MEMBER' || github.event.comment.author_association == 'OWNER') &&
        github.event.issue.pull_request)
     steps:
-      - name: Determine PR head SHA
-        id: pr-head-sha
+      - name: Get PR head SHA
+        id: get-pr-sha
         run: |
           if [ "${{ github.event_name }}" == "pull_request" ]; then
             echo "pr_sha=${{ github.event.pull_request.head.sha }}" >> $GITHUB_OUTPUT
           else
-            echo "pr_sha=${{ github.event.issue.pull_request.head.sha }}" >> $GITHUB_OUTPUT
+            PR_URL="${{ github.event.issue.pull_request.url }}"
+            SHA=$(curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" $PR_URL | jq -r '.head.sha')
+            echo "pr_sha=$SHA" >> $GITHUB_OUTPUT
           fi
+          echo "Using SHA: ${{ steps.get-pr-sha.outputs.pr_sha }}"
       - name: Check out code
         uses: actions/checkout@v4
         with:
