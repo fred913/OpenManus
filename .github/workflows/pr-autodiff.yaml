@@ -23,16 +23,17 @@ jobs:
         run: |
           if [ "${{ github.event_name }}" == "pull_request" ]; then
             echo "pr_sha=${{ github.event.pull_request.head.sha }}" >> $GITHUB_OUTPUT
+            echo "Retrieved PR head SHA: ${{ github.event.pull_request.head.sha }}"
           else
             PR_URL="${{ github.event.issue.pull_request.url }}"
             SHA=$(curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" $PR_URL | jq -r '.head.sha')
             echo "pr_sha=$SHA" >> $GITHUB_OUTPUT
+            echo "Retrieved PR head SHA from API: $SHA"
           fi
-          echo "Using SHA: ${{ steps.get-pr-sha.outputs.pr_sha }}"
       - name: Check out code
         uses: actions/checkout@v4
         with:
-          ref: ${{ steps.pr-head-sha.outputs.pr_sha }}
+          ref: ${{ steps.get-pr-sha.outputs.pr_sha }}
           fetch-depth: 0
       - name: Set up Python
         uses: actions/setup-python@v4
