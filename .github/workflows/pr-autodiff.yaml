@@ -49,14 +49,30 @@ jobs:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           OPENAI_BASE_URL: ${{ secrets.OPENAI_BASE_URL }}
         run: |
-          PROMPT="Review code changes and provide concise bilingual feedback (Provide English version first, followed by the Chinese Simplified version). Follow the guidelines below: \n\n\n$(cat guidelines.md)\n\n\n\nOutput in a similar format as in the template shown: \n\n\n$(cat diff_example.md)\n\n\n\nReal diff: $(cat diff_report.md)"
-          echo "Prompt: $PROMPT"
-          jq -n --arg prompt "$PROMPT" '{
-            "model": "o3-mini",
-            "messages": [
-              { "role": "system", "content": "Provide bilingual Chinese/English code diff feedback according to user's guidelines." },
-              { "role": "user", "content": $prompt }
-            ]
+          GUIDELINES=$(jq -Rs . guidelines.md)
+          EXAMPLE=$(jq -Rs . diff_example.md)
+          DIFF=$(jq -Rs . diff_report.md)
+          jq -n \
+          --arg guidelines "$GUIDELINES" \
+          --arg example "$EXAMPLE" \
+          --arg diff "$DIFF" \
+          '{
+              "model": "gpt-3.5-turbo",  # 修正模型名称（根据实际使用调整）
+              "messages": [
+              {
+                  "role": "system",
+                  "content": "Provide bilingual Chinese/English code diff feedback according to user's guidelines."
+              },
+              {
+                  "role": "user",
+                  "content": ("Review code changes and provide concise bilingual feedback (English first, Chinese Simplified after). Guidelines:\n"
+                  + ($guidelines | sub("^\\s*(.*?)\\s*$"; "\(.content)"))
+                  + "\n\nExample Format:\n"
+                  + ($example | sub("^\\s*(.*?)\\s*$"; "\(.content)"))
+                  + "\n\nReal Diff:\n"
+                  + ($diff | sub("^\\s*(.*?)\\s*$"; "\(.content)")))
+              }
+              ]
           }' > request.json
           curl -sS ${OPENAI_BASE_URL}/chat/completions \
             -H "Content-Type: application/json" \
