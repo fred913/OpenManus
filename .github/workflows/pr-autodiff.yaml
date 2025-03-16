@@ -18,10 +18,18 @@ jobs:
        (github.event.comment.author_association == 'COLLABORATOR' || github.event.comment.author_association == 'MEMBER' || github.event.comment.author_association == 'OWNER') &&
        github.event.issue.pull_request)
     steps:
-      - name: Checkout code
+      - name: Determine PR head SHA
+        id: pr-head-sha
+        run: |
+          if [ "${{ github.event_name }}" == "pull_request" ]; then
+            echo "pr_sha=${{ github.event.pull_request.head.sha }}" >> $GITHUB_OUTPUT
+          else
+            echo "pr_sha=${{ github.event.issue.pull_request.head.sha }}" >> $GITHUB_OUTPUT
+          fi
+      - name: Check out code
         uses: actions/checkout@v4
         with:
-          ref: ${{ github.event.pull_request.head.sha }}
+          ref: ${{ steps.pr-head-sha.outputs.pr_sha }}
           fetch-depth: 0
       - name: Set up Python
         uses: actions/setup-python@v4
