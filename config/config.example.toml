@@ -62,7 +62,13 @@ temperature = 0.0                      # Controls randomness for vision model
 # username = "proxy-username"
 # password = "proxy-password"
 
+
 # Optional configuration, Search settings.
 # [search]
 # Search engine for agent to use. Default is "Google", can be set to "Baidu" or "DuckDuckGo".
 #engine = "Google"
+
+# Optional configuration, settings for send email using by gmail
+# [email.gmail]
+# sender_email = "The Gmail account added to your Google account."
+# app_password = "Your Gmail password"
