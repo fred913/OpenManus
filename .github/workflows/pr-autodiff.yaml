@@ -68,17 +68,21 @@ jobs:
               guidelines = '''
           1. English version first, Chinese Simplified version after
           2. Example format:
-            ## Diff Report
-            ---
-            **English:**
-            - Added ABC class
-            **Chinese (Simplified):**
-            - 新增了ABC类
+              # Diff Report
+              ## English
+              - Added `ABC` class
+              - Fixed `f()` behavior in `foo` module
+
+              ### Comments Highlight
+              - `config.toml` needs to be configured properly to make sure new features work as expected.
+
+              ### Spelling/Offensive Content Check
+              - No spelling mistakes or offensive content found in the code or comments.
           3. Highlight non-English comments
           4. Check for spelling/offensive content'''
 
               response = client.chat.completions.create(
-                  model="gpt-4o-mini",
+                  model="o3-mini",
                   messages=[{
                       "role": "system",
                       "content": "Generate bilingual code review feedback."
