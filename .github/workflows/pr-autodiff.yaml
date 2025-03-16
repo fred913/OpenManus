@@ -57,7 +57,7 @@ jobs:
                   line for line in result.stdout.split('\n')
                   if any(line.startswith(c) for c in ('+', '-'))
                   and not line.startswith(('---', '+++'))
-              )[:200000 * 0.4]  # Truncate to prevent overflow
+              )[:round(200000 * 0.4)]  # Truncate to prevent overflow
 
           def generate_comment(diff_content):
               client = OpenAI(
