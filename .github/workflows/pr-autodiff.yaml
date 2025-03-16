@@ -49,7 +49,7 @@ jobs:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           OPENAI_BASE_URL: ${{ secrets.OPENAI_BASE_URL }}
         run: |
-          PROMPT="Review code changes and provide concise bilingual feedback (Provide English version first, followed by the Chinese Simplified version). Follow the guidelines below: \n\n```markdown\n$(cat guidelines.md)\n```\n\n\nOutput in a similar format as in the template shown: \n\n```markdown\n$(cat diff_example.md)\n```\n\n\n Real diff: $(cat diff_report.md)"
+          PROMPT="Review code changes and provide concise bilingual feedback (Provide English version first, followed by the Chinese Simplified version). Follow the guidelines below: \n\n\`\`\`markdown\n$(cat guidelines.md)\n\`\`\`\n\n\nOutput in a similar format as in the template shown: \n\n\`\`\`markdown\n$(cat diff_example.md)\n\`\`\`\n\n\n Real diff: $(cat diff_report.md)"
           jq -n --arg prompt "$PROMPT" '{
             "model": "o3-mini",
             "messages": [
