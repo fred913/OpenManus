@@ -5,7 +5,6 @@ import pytest
 from app.agent.browser import BrowserAgent
 from app.agent.manus import Manus
 from app.prompt.manus import NEXT_STEP_PROMPT
-from app.tool import BrowserUseTool, StrReplaceEditor, Terminate, ToolCollection
 
 
 class MockMessage:

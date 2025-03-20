@@ -1,17 +1,15 @@
-from calendar import c
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import AsyncMock
 
 import pytest
 from pydantic import Field
 
-from app.agent.base import ROLE_TYPE, AgentState, BaseAgent, Message
+from app.agent.base import AgentState, BaseAgent
 from app.llm import LLM
 from app.sandbox.client import SANDBOX_CLIENT
 from app.schema import Memory, Role
 
 
 class MockAgent(BaseAgent):
-
     name: str
     description: str | None = None
 
@@ -30,7 +28,6 @@ class MockAgent(BaseAgent):
 
 
 class MockFeaturedAgent(BaseAgent):
-
     name: str
     description: str | None = None
 

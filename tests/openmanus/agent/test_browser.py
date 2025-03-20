@@ -1,12 +1,8 @@
 from unittest.mock import AsyncMock, MagicMock
 
 import pytest
-from openai.types.chat.chat_completion_message import ChatCompletionMessage
 
 from app.agent.browser import BrowserAgent
-from app.llm import LLM
-from app.prompt.browser import NEXT_STEP_PROMPT
-from app.schema import Message, ToolChoice
 from app.tool import BrowserUseTool, Terminate, ToolCollection
 
 

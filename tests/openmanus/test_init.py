@@ -15,7 +15,7 @@ from app.agent import (
 
 def test_base_agent_init():
     with pytest.raises(TypeError):  # it's an abstract class
-        agent = BaseAgent()
+        BaseAgent()
 
 
 def test_browser_agent_init():
@@ -35,7 +35,7 @@ def test_planning_agent_init():
 
 def test_react_agent_init():
     with pytest.raises(TypeError):  # it's an abstract class
-        agent = ReActAgent()
+        ReActAgent()
 
 
 def test_swe_agent_init():
