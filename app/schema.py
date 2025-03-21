@@ -179,6 +179,8 @@ class Memory(BaseModel):
 
     def get_recent_messages(self, n: int) -> List[Message]:
         """Get n most recent messages"""
+        if n <= 0:
+            raise ValueError("n should be a positive integer")
         return self.messages[-n:]
 
     def to_dict_list(self) -> List[dict]:
